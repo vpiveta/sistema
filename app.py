@@ -5,6 +5,12 @@ from datetime import datetime,timedelta
 from zoneinfo import ZoneInfo
 from werkzeug.security import check_password_hash
 app=Flask(__name__); app.secret_key=os.environ["SECRET_KEY"]
+@app.after_request
+def no_cache(resp):
+ resp.headers["Cache-Control"]="no-store, no-cache, must-revalidate, max-age=0"
+ resp.headers["Pragma"]="no-cache"
+ resp.headers["Expires"]="0"
+ return resp
 URL=os.getenv("SDA9_SYNC_URL","https://xynpbdtgamwhayrfkeod.supabase.co/functions/v1/sda9-sync"); TOKEN=os.environ["SDA9_SYNC_TOKEN"]
 TZ=ZoneInfo("America/Sao_Paulo")
 def api(p):
