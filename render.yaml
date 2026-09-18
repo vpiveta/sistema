@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: sda9-portal-motorista
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: TZ
+        value: America/Sao_Paulo
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SDA9_SYNC_TOKEN
+        sync: false
