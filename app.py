@@ -13,6 +13,12 @@ def no_cache(resp):
  return resp
 URL=os.getenv("SDA9_SYNC_URL","https://xynpbdtgamwhayrfkeod.supabase.co/functions/v1/sda9-sync"); TOKEN=os.environ["SDA9_SYNC_TOKEN"]
 TZ=ZoneInfo("America/Sao_Paulo")
+def brl(v):
+ try:
+  n=float(v or 0)
+  return f"{n:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+ except (TypeError,ValueError): return "0,00"
+app.jinja_env.filters["brl"]=brl
 def api(p):
  r=Request(URL,data=json.dumps(p).encode(),headers={"content-type":"application/json","x-sda9-token":TOKEN}); return json.loads(urlopen(r,timeout=20).read())
 def bounds():
