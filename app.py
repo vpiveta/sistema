@@ -21,8 +21,17 @@ def brl(v):
 app.jinja_env.filters["brl"]=brl
 def api(p):
  r=Request(URL,data=json.dumps(p).encode(),headers={"content-type":"application/json","x-sda9-token":TOKEN}); return json.loads(urlopen(r,timeout=20).read())
-def bounds():
- h=datetime.now(TZ).date(); ini=h.replace(day=1 if h.day<=15 else 16); fim=h.replace(day=15) if h.day<=15 else (h.replace(day=28)+timedelta(days=4)).replace(day=1)-timedelta(days=1); return h,ini,fim
+def bounds(periodo="atual"):
+ h=datetime.now(TZ).date()
+ ini=h.replace(day=1 if h.day<=15 else 16)
+ fim=h.replace(day=15) if h.day<=15 else (h.replace(day=28)+timedelta(days=4)).replace(day=1)-timedelta(days=1)
+ if periodo=="anterior":
+  if h.day<=15:
+   ant=h.replace(day=1)-timedelta(days=1)
+   ini=ant.replace(day=16); fim=ant
+  else:
+   ini=h.replace(day=1); fim=h.replace(day=15)
+ return h,ini,fim
 @app.route("/",methods=["GET","POST"])
 def login():
  if request.method=="POST":
@@ -37,7 +46,11 @@ def sair(): session.clear();return redirect("/")
 @app.route("/portal")
 def portal():
  if not session.get("mid"):return redirect("/")
- h,i,f=bounds(); d=api({"action":"resumo","motorista_id":session["mid"],"inicio":i.isoformat(),"fim":f.isoformat()}); return render_template("portal.html",d=d,hoje=h.isoformat(),nome=session["nome"])
+ periodo=request.args.get("periodo","atual")
+ if periodo not in ("atual","anterior"): periodo="atual"
+ h,i,f=bounds(periodo)
+ d=api({"action":"resumo","motorista_id":session["mid"],"inicio":i.isoformat(),"fim":f.isoformat()})
+ return render_template("portal.html",d=d,hoje=h.isoformat(),nome=session["nome"],periodo=periodo,inicio=i.isoformat(),fim=f.isoformat())
 @app.post("/divergencia")
 def div():
  if not session.get("mid"):return jsonify(ok=False),403
